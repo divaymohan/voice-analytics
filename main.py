@@ -1,0 +1,37 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional
+import uvicorn
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Import the audio analysis router
+from controller.analyse_file import router as audio_router
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Voice Analytics API",
+    description="A simple FastAPI application for voice analytics with audio transcription capabilities",
+    version="1.0.0"
+)
+
+# Include the audio analysis router
+app.include_router(audio_router)
+
+@app.get("/")
+async def root():
+    """Root endpoint returning a welcome message."""
+    return {"message": "Welcome to Voice Analytics API!"}
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy", "service": "voice-analytics-api"}
+
+if __name__ == "__main__":
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host=host, port=port) 
