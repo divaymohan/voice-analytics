@@ -1,146 +1,127 @@
-# Voice Analytics API
+# Voice Analytics API 🚀
 
-A FastAPI application for voice analytics with audio transcription capabilities using Deepgram API.
+**AI-powered, async, and persistent audio transcription & sales call review platform.**
 
-## Features
+---
 
-- Audio file transcription using Deepgram API
-- Support for multiple audio formats (MP3, WAV, M4A, FLAC, OGG, WEBM, MP4)
-- RESTful API endpoints
-- Automatic API documentation with Swagger UI
-- File upload validation
-- Detailed transcription results with timestamps and confidence scores
+## ✨ Features
+- **Async audio transcription** with Deepgram (multi-language, fast, accurate)
+- **Background processing**: Get a request ID instantly, poll for results
+- **PostgreSQL persistence**: All requests and results are saved
+- **AI Sales Call Review**: Each transcript is reviewed by GPT-4 for actionable feedback
+- **Modern FastAPI backend**: Fully async, production-ready
+- **Swagger/OpenAPI docs**: Try it live at `/docs`
 
-## Prerequisites
+---
 
-- Python 3.8+
-- Deepgram API key (get one from [Deepgram Console](https://console.deepgram.com/))
+## 🛠️ Quickstart
 
-## Setup
-
-1. **Install dependencies:**
+1. **Clone & Install**
    ```bash
+   git clone <your-repo-url>
+   cd VoiceAnalytics
    pip install -r requirements.txt
    ```
 
-2. **Set up environment variables:**
+2. **Configure Environment**
    ```bash
    cp env.example .env
-   # Edit .env and add your Deepgram API key
-   # You can also customize HOST, PORT, and LOG_LEVEL
+   # Edit .env and add your Deepgram and OpenAI API keys
+   # Set your PostgreSQL connection string
    ```
 
-3. **Run the application:**
+3. **Initialize Database**
    ```bash
-   python main.py
+   PYTHONPATH=. python3 svc/db_init.py
    ```
-   
-   Or using uvicorn directly:
+
+4. **Run the API**
    ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   python3 main.py
+   # or
+   uvicorn main:app --reload
    ```
 
-## API Endpoints
+---
 
-- `GET /` - Welcome message
-- `GET /health` - Health check
-- `POST /api/v1/transcribe` - Transcribe audio file
+## 🔥 How it Works
 
-## API Documentation
+1. **POST `/api/v1/transcribe`**
+   - Upload an audio file (WAV, MP3, etc.)
+   - Instantly get a `request_id`
+   - Processing happens in the background
 
-Once the server is running, you can access:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+2. **GET `/api/v1/status/{request_id}`**
+   - Poll this endpoint to check if your transcript & review are ready
 
-## Example Usage
+3. **GET `/api/v1/result/{request_id}`**
+   - Get the full transcript and a detailed, AI-generated review of the sales call
 
-### Transcribe an audio file
-```bash
-curl -X POST "http://localhost:8000/api/v1/transcribe" \
-     -H "Content-Type: multipart/form-data" \
-     -F "audio_file=@path/to/your/audio.mp3"
-```
+---
 
-### Using Python requests
-```python
-import requests
+## 🧠 Example: Sales Call Review
 
-url = "http://localhost:8000/api/v1/transcribe"
-files = {"audio_file": open("audio.mp3", "rb")}
-response = requests.post(url, files=files)
-print(response.json())
-```
+The API uses GPT-4 to review your sales call transcript on:
+- Start of the conversation
+- Pitching of the product
+- Understanding the customer’s problem
+- Collecting required information
+- Ending the call
 
-## Response Format
+For each, you get:
+- A rating (1-5)
+- What was done well
+- Suggestions for improvement
 
-The transcription endpoint returns a detailed response including:
+---
 
-- **Metadata**: File information, duration, model used
-- **Results**: Complete transcript with word-level timestamps
-- **Confidence scores**: Per-word and overall confidence
-- **Paragraphs**: Structured text with sentence boundaries
-
-Example response structure:
-```json
-{
-  "metadata": {
-    "request_id": "2479c8c8-8185-40ac-9ac6-f0874419f793",
-    "duration": 25.933313,
-    "models": ["30089e05-99d1-4376-b32e-c263170674af"]
-  },
-  "results": {
-    "channels": [
-      {
-        "alternatives": [
-          {
-            "transcript": "Complete transcript text...",
-            "confidence": 0.99902344,
-            "words": [...],
-            "paragraphs": {...}
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Project Structure
+## 📦 Project Structure
 
 ```
 VoiceAnalytics/
-├── main.py                    # Main FastAPI application
-├── requirements.txt           # Python dependencies
-├── env.example               # Environment variables template
-├── controller/
-│   └── analyse_file.py       # Audio transcription controller
+├── main.py                  # FastAPI app entrypoint
+├── requirements.txt         # Dependencies
+├── env.example              # Environment variable template
 ├── svc/
-│   └── analyse_file_svc.py   # Deepgram service layer
-└── README.md                 # This file
+│   ├── db.py                # Async DB setup
+│   ├── db_init.py           # DB migration script
+│   ├── models.py            # SQLAlchemy models
+│   ├── analyse_file_svc.py  # Deepgram & OpenAI logic
+├── controller/
+│   └── analyse_file.py      # API endpoints
+└── README.md
 ```
 
-## Supported Audio Formats
+---
 
-- MP3
-- WAV
-- M4A
-- FLAC
-- OGG
-- WEBM
-- MP4
+## 🌍 API Demo (with `curl`)
 
-## File Size Limits
+**Transcribe & Review:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/transcribe" \
+     -F "audio_file=@your_audio.wav"
+# Response: { "request_id": "..." }
+```
 
-- Maximum file size: 100MB
-- For larger files, consider chunking or streaming
+**Check Status:**
+```bash
+curl "http://localhost:8000/api/v1/status/<request_id>"
+```
 
-## Development
+**Get Result:**
+```bash
+curl "http://localhost:8000/api/v1/result/<request_id>"
+```
 
-For production deployment, consider:
-- Adding authentication and authorization
-- Implementing rate limiting
-- Adding request logging
-- Setting up monitoring and alerting
-- Adding comprehensive error handling
-- Implementing file storage (S3, etc.)
-- Adding caching for repeated transcriptions 
+---
+
+## 💡 Why VoiceAnalytics?
+- **Async & Scalable**: Never wait for a long upload to finish
+- **Persistent**: All your requests and results are saved
+- **AI Insights**: Get actionable, human-like feedback on every sales call
+- **OpenAPI Docs**: Test and explore at `/docs`
+
+---
+
+## 📝 License
+MIT 
