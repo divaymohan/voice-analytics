@@ -59,6 +59,91 @@
 
 ---
 
+## 📑 API Reference & Example Structures
+
+### 1. Transcribe Audio
+**Endpoint:** `POST /api/v1/transcribe`
+
+**Request:**
+- Content-Type: `multipart/form-data`
+- Body:
+  - `audio_file`: The audio file to transcribe (WAV, MP3, M4A, FLAC, OGG, WEBM, MP4)
+
+**Example cURL:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/transcribe" \
+     -F "audio_file=@your_audio.wav"
+```
+
+**Response:**
+```json
+{
+  "request_id": "b7e2e2e2-1234-5678-9abc-abcdef123456"
+}
+```
+
+---
+
+### 2. Check Status
+**Endpoint:** `GET /api/v1/status/{request_id}`
+
+**Request:**
+- Path parameter: `request_id` (UUID string)
+
+**Example cURL:**
+```bash
+curl "http://localhost:8000/api/v1/status/b7e2e2e2-1234-5678-9abc-abcdef123456"
+```
+
+**Response:**
+```json
+{
+  "request_id": "b7e2e2e2-1234-5678-9abc-abcdef123456",
+  "status": "pending" // or "processing", "done", "error"
+}
+```
+
+---
+
+### 3. Get Result
+**Endpoint:** `GET /api/v1/result/{request_id}`
+
+**Request:**
+- Path parameter: `request_id` (UUID string)
+
+**Example cURL:**
+```bash
+curl "http://localhost:8000/api/v1/result/b7e2e2e2-1234-5678-9abc-abcdef123456"
+```
+
+**Response (Success):**
+```json
+{
+  "request_id": "b7e2e2e2-1234-5678-9abc-abcdef123456",
+  "result": {
+    "review": "Start of the conversation: 4/5... (AI-generated feedback here)"
+  }
+}
+```
+
+**Response (Error):**
+```json
+{
+  "request_id": "b7e2e2e2-1234-5678-9abc-abcdef123456",
+  "error": "Transcription failed: ..."
+}
+```
+
+**Response (Still Processing):**
+```json
+{
+  "request_id": "b7e2e2e2-1234-5678-9abc-abcdef123456",
+  "status": "pending"
+}
+```
+
+---
+
 ## 🧠 Example: Sales Call Review
 
 The API uses GPT-4 to review your sales call transcript on:
