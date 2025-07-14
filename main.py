@@ -10,6 +10,8 @@ load_dotenv()
 
 # Import the audio analysis router
 from controller.analyse_file import router as audio_router
+from controller.auth import router as auth_router
+from controller.org import router as org_router
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -18,8 +20,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Include the audio analysis router
+# Include the routers
 app.include_router(audio_router)
+app.include_router(auth_router)
+app.include_router(org_router)
 
 @app.get("/")
 async def root():
@@ -35,3 +39,4 @@ if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host=host, port=port) 
+    

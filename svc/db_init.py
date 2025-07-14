@@ -1,6 +1,7 @@
 import asyncio
 from svc.db import engine, Base
 import svc.models  # ensure models are imported
+from svc.models import User, Organization
 
 async def init_db():
     async with engine.begin() as conn:
@@ -9,3 +10,4 @@ async def init_db():
 
 if __name__ == "__main__":
     asyncio.run(init_db()) 
+    
