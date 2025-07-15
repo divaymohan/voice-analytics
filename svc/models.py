@@ -19,6 +19,7 @@ class TranscriptionRequest(Base):
 
     request_id: Mapped[str] = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     filename: Mapped[str] = Column(String(256), nullable=False)
+    transcript: Mapped[str] = Column(Text, nullable=True)
     status: Mapped[str] = Column(Enum(RequestStatus), default=RequestStatus.pending, nullable=False)
     created_at: Mapped[str] = Column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[str] = Column(DateTime(timezone=True), onupdate=func.now())

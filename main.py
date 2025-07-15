@@ -4,6 +4,7 @@ from typing import List, Optional
 import uvicorn
 import os
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,6 +19,15 @@ app = FastAPI(
     title="Voice Analytics API",
     description="A simple FastAPI application for voice analytics with audio transcription capabilities",
     version="1.0.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 # Include the routers

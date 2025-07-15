@@ -5,6 +5,7 @@ from typing import Dict, Any
 from fastapi import HTTPException
 from dotenv import load_dotenv
 from openai import OpenAI
+import json
 
 # Load environment variables from .env file
 load_dotenv()
@@ -86,30 +87,62 @@ class AnalyseFileService:
     
 
 
-    async def review_transcript(self, transcript: str, language: str = "auto"):
+    async def review_transcript(self, transcript: str, language: str = "auto", request_id: str = None):
+        if not transcript or not transcript.strip():
+            raise HTTPException(status_code=400, detail="Transcript is empty. Please provide a valid transcript for review.")
+
         prompt = f"""
-            You are a professional sales communication coach.
+        You are a professional sales communication coach.
 
-            The following is a transcript of a sales call in language: {language}.
-            Evaluate the conversation based on the following five criteria:
-            1. Start of the conversation
-            2. Pitching of the product
-            3. Understanding the customer’s problem
-            4. Collecting required information
-            5. Ending the call
+        The following is a transcript of a sales call in language: {language}.
+        Evaluate the conversation based on the following five criteria:
+        1. Start of the conversation
+        2. Pitching of the product
+        3. Understanding the customer’s problem
+        4. Collecting required information
+        5. Ending the call
 
-            For each point, give:
-            - A rating from 1 to 5
-            - What was done well
-            - Suggestions for improvement
+        For each point, give:
+        - A rating from 1 to 5
+        - What was done well
+        - Suggestions for improvement
 
-            Always respond in English regardless of the transcript language.
+        Always respond in English regardless of the transcript language.
 
-            Transcript:
-            \"\"\"
-            {transcript}
-            \"\"\"
-      """
+        Respond ONLY in the following strict JSON format (do not include any extra text):
+        {{
+        "review": {{
+            "start_of_conversation": {{
+            "rating": <int>,
+            "what_was_done_well": <string>,
+            "suggestions_for_improvement": <string>
+            }},
+            "pitching_of_product": {{
+            "rating": <int>,
+            "what_was_done_well": <string>,
+            "suggestions_for_improvement": <string>
+            }},
+            "understanding_customer_problem": {{
+            "rating": <int>,
+            "what_was_done_well": <string>,
+            "suggestions_for_improvement": <string>
+            }},
+            "collecting_required_information": {{
+            "rating": <int>,
+            "what_was_done_well": <string>,
+            "suggestions_for_improvement": <string>
+            }},
+            "ending_the_call": {{
+            "rating": <int>,
+            "what_was_done_well": <string>,
+            "suggestions_for_improvement": <string>
+            }}
+        }}
+        }}
+
+        Transcript:
+        """
+        prompt = prompt+transcript
 
         response = self.open_ai_client.chat.completions.create(
             model="gpt-4",  # You can use gpt-3.5-turbo if needed
@@ -120,5 +153,11 @@ class AnalyseFileService:
             temperature=0.4,
         )
 
-        return {"review": response.choices[0].message.content}
+        # Parse the response as JSON
+        try:
+            review_json = json.loads(response.choices[0].message.content)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to parse OpenAI response as JSON: {str(e)}. Raw response: {response.choices[0].message.content}")
+
+        return {"request_id": request_id, "result": review_json}
     

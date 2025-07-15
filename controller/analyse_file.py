@@ -25,10 +25,12 @@ async def process_transcription(request_id: str, file_content: bytes, filename: 
         await session.commit()
         try:
             result = await analyse_service.transcribe_audio_file(file_content, filename)
-            result = await analyse_service.review_transcript(result['results']['channels'][0]['alternatives'][0]['transcript'])
-            req.status = RequestStatus.done
-            req.result = result
+            transcript = result['results']['channels'][0]['alternatives'][0]['transcript']
+            req.transcript = transcript
+            review_result = await analyse_service.review_transcript(req.transcript, request_id=request_id)
+            req.result = review_result.get("result")
             req.error = None
+            req.status = RequestStatus.done
         except Exception as e:
             req.status = RequestStatus.error
             req.error = str(e)
